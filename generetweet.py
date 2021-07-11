@@ -15,14 +15,20 @@ def img(i, day):
 			break
 	imagetweets.append(thistweet)
 
-def msg(day):
+def msg(day, preco=False):
 	for i, sortie in enumerate(day):
 		if len(mmessage) == 0:
-			mmessage.append(f"☀ VOICI LES SORTIES DU JOUR ☀\n\n- {sortie['titre']} {sortie['tome']} ({sortie['edition']})")
+			if preco:
+				StartTweet = "🚨 NOUVELLES PRECOMMANDES DETECTÉES🚨"
+			else:
+				StartTweet = "☀ VOICI LES SORTIES DU JOUR ☀"
+			mmessage.append(f"{StartTweet}\n\n- {sortie['titre']} {sortie['tome']} ({sortie['edition']})")
 			img(i, day)
-		elif len(mmessage[len(mmessage)-1]) >= 200:
+		elif len(mmessage[len(mmessage)-1]) >= 175:
 			mmessage.append(f"\n- {sortie['titre']} {sortie['tome']} ({sortie['edition']})")
 			img(i, day)
 		else:
 			mmessage[len(mmessage)-1] += f"\n- {sortie['titre']} {sortie['tome']} ({sortie['edition']})"
+		if preco:
+			mmessage[len(mmessage)-1] += f" (Sort le: {sortie['date']})"
 	return mmessage, imagetweets
