@@ -18,14 +18,14 @@ def fnac():
 		r = session.get(f"https://livre.fnac.com/l37273/Top-des-mangas-a-paraitre/Manga?sl&ssi=2&sso=2&PageIndex={page}", headers=headers)
 		articles += r.html.xpath('//article[@class="Article-itemGroup"]')
 
-	sorties = {}
+	sorties, today = {}, []
 	for manga in articles:
-		try:
-			date = manga.xpath('//span[@class="f-buybox-deliverydate"]')[0].text
-			date = ConvertDate(date).date().strftime("%m, %d, %Y")
-		except:
-			date = "00"
 		sortie = {}
+		try:
+			sortie['date'] = manga.xpath('//span[@class="f-buybox-deliverydate"]')[0].text
+			sortie['date'] = ConvertDate(sortie['date']).date().strftime("%d/%m/%Y")
+		except:
+			sortie['date'] = "00"
 		try:
 			sortie['img'] = manga.xpath('//img/@data-lazyimage')[0]
 		except:
@@ -39,13 +39,21 @@ def fnac():
 			sortie['edition'] = "Edition collector"
 		else:
 			sortie['edition'] = "Edition simple"
-		if date in sorties:
-			sorties[date].append(sortie)
-		else:
-			sorties[date] = [sortie]
+		mangaTxt = f"{sortie['date']}\-|-/{sortie['img']}\-|-/{sortie['titre']}\-|-/{sortie['tome']}\-|-/{sortie['edition']}"
+		sorties[mangaTxt] = sortie
+		today.append(mangaTxt)
 
 	end = time.time()
-	file = open('assets/precos.json', "w+")
-	file.write(json.dumps(sorties, sort_keys=True, indent=4))
+	file = open('assets/precos.txt', "r")
+	Lasts = file.read().split("\n")
+	newprecos = list(set(today) - set(Lasts))
 	file.close()
 	print(f"{int(end - start)}secondes pour trouver les résultats")
+	sorties2 = []
+	for newpreco in newprecos:
+		sorties2.append(sorties[newpreco])
+	file = open('assets/precos.txt', "w+")
+	for mangaTxt in today:
+		file.write("%s\n" % mangaTxt)
+	file.close()
+	return sorties2
